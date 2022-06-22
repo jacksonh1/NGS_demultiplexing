@@ -1,0 +1,12 @@
+name: py2_traf6_NGS
+dependencies:
+  - python=2.7
+  - notebook
+  - decorator=4.4.0
+  - functools_lru_cache
+  - pandas
+  - matplotlib
+  - numpy
+  - seaborn
+  - scipy
+  - biopython

@@ -30,16 +30,16 @@ NUM_PROCESSES = 15
 List of expression strings which will be evaluated and written out to the
 params.txt file.
 '''
-PARAMETER_LIST = ["args.forward", "args.reverse", "args.out", "args.mode", "args.numlines", "index_codes", "barcodes", "BARCODE_FILE_PREFIX"]
+PARAMETER_LIST = ["args.forward", "args.reverse", "args.out", "args.mode", "args.numlines", "INDEX_CODES", "BARCODES", "BARCODE_FILE_PREFIX"]
 
 ### Barcode sorting logic
 
 # The possible index codes, found from the reverse complement of the first six bases
 # of the reverse read.
-index_codes = ["ATCACG","CGATGT","TTAGGC","TGACCA","ACAGTG","GCCAAT",
+INDEX_CODES = ["ATCACG","CGATGT","TTAGGC","TGACCA","ACAGTG","GCCAAT",
                 "CAGATC","ACTTGA","GATCAG"]
 # The possible barcodes, found from the first five bases of the forward read.
-barcodes = ["ACTCG","ACTGT", "AATGC", "AGTCA", "ATACG", "ATAGC",
+BARCODES = ["ACTCG","ACTGT", "AATGC", "AGTCA", "ATACG", "ATAGC",
                 "CGATC", "CTAAG", "CTCGA", "CGAAT", "CTGGT", "CGGTT",
                 "GACTT", "GTTCA", "GATAC", "GAGCA", "GATGA", "GTCTG",
                 "TCGGA", "TGACC", "TACTG", "TCCAG", "TCGAC", "TAGCT"]
@@ -59,17 +59,17 @@ def get_barcode_number(forward, reverse):
 
     candidate_index = reverse.seq[:6].reverse_complement()
     # For now, demands an exact match
-    index = get_closest_barcode(candidate_index, index_codes, 6)
+    index = get_closest_barcode(candidate_index, INDEX_CODES, 6)
     if index == -1:
        return -1
 
     candidate_barcode = sequence[:5]
     # Exact match
-    barcode = get_closest_barcode(candidate_barcode, barcodes, 5)
+    barcode = get_closest_barcode(candidate_barcode, BARCODES, 5)
     if barcode == -1:
        return -1
 
-    return (index * len(barcodes)) + barcode
+    return (index * len(BARCODES)) + barcode
 
 def accuracy(seq, other_seq, threshold):
     '''
@@ -104,7 +104,7 @@ def sort_sequences_single_thread(forward_path, reverse_path, out_dir, append=Fal
 
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-    output_streams = open_output_streams(out_dir, BARCODE_FILE_PREFIX, len(index_codes) * len(barcodes), append)
+    output_streams = open_output_streams(out_dir, BARCODE_FILE_PREFIX, len(INDEX_CODES) * len(BARCODES), append)
 
     if chunk_size > 1:
         sort_sequence_chunks(records_forward, records_reverse, chunk_size, output_streams)
@@ -229,7 +229,7 @@ def sort_sequences_multithread(forward_path, reverse_path, out_dir, num_lines=6e
     print("Joining files...")
     pool = multiprocessing.Pool(processes=NUM_PROCESSES)
     processor = partial(join_files_processor, out_dir, len(workers))
-    pool.map(processor, range(len(index_codes) * len(barcodes)))
+    pool.map(processor, range(len(INDEX_CODES) * len(BARCODES)))
 
     print("Cleaning up...")
     paths_to_delete = list(splits) + [os.path.join(out_dir, str(i)) for i in xrange(len(workers))]
